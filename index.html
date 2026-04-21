@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BalikTahanan</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+
+        <section id="homeScreen" class="screen active">
+            <div class="panel home-panel">
+                <h1>BalikTahanan</h1>
+                <p class="subtitle">Complete the puzzle.</p>
+
+                <div class="menu-actions">
+                    <button id="startBtn" class="btn btn-primary">Start Game</button>
+                    <button id="loginBtn" class="btn btn-secondary">Login</button>
+                    <button id="customBtn" class="btn btn-secondary">Create Your Own Puzzle</button>
+                </div>
+
+                <p class="privacy-note">
+                    Usernames are saved only on this device. To log in again, re-enter an existing username.
+                </p>
+            </div>
+        </section>
+
+        <section id="accountScreen" class="screen">
+            <div class="panel">
+                <h2 id="accountTitle">Create Username</h2>
+                <p class="subtitle" id="accountSubtitle">Enter a username to begin.</p>
+
+                <div class="upload-wrap">
+                    <input type="text" id="usernameInput" placeholder="Enter username" maxlength="20">
+                </div>
+
+                <div class="menu-actions">
+                    <button id="accountConfirmBtn" class="btn btn-primary">Continue</button>
+                    <button id="accountBackBtn" class="btn btn-ghost">Back</button>
+                </div>
+
+                <div id="accountMessage" class="subtitle"></div>
+            </div>
+        </section>
+
+        <section id="difficultyScreen" class="screen">
+            <div class="panel">
+                <h2>Select Difficulty</h2>
+                <div class="difficulty-grid">
+                    <button class="btn btn-secondary diff-btn" data-mode="intro">Intro</button>
+                    <button class="btn btn-secondary diff-btn" data-mode="easy">Easy</button>
+                    <button class="btn btn-secondary diff-btn" data-mode="difficult">Difficult</button>
+                    <button class="btn btn-secondary diff-btn" data-mode="hard">Hard</button>
+                </div>
+                <button id="backToHome1" class="btn btn-ghost">Back</button>
+            </div>
+        </section>
+
+        <section id="stageScreen" class="screen">
+            <div class="panel">
+                <h2>Select Stage</h2>
+                <p class="subtitle" id="stageModeLabel">Difficulty: -</p>
+
+                <div class="difficulty-grid">
+                    <button class="btn btn-secondary stage-btn" data-stage="0">Stage 1</button>
+                    <button class="btn btn-secondary stage-btn" data-stage="1">Stage 2</button>
+                    <button class="btn btn-secondary stage-btn" data-stage="2">Stage 3</button>
+                </div>
+
+                <button id="backToDifficultyBtn" class="btn btn-ghost">Back</button>
+            </div>
+        </section>
+
+        <section id="customScreen" class="screen">
+            <div class="panel">
+                <h2>Create Your Own Puzzle</h2>
+                <p class="subtitle">Upload an image and choose a difficulty to generate a puzzle on this device.</p>
+
+                <div class="upload-wrap">
+                    <input type="file" id="imageUpload" accept="image/*">
+                </div>
+
+                <div id="imagePreviewContainer">
+                    <img id="imagePreview" src="puzzles/logo.png" alt="Preview">
+                </div>
+
+                <h3>Set Difficulty</h3>
+                <div class="difficulty-grid">
+                    <button class="btn btn-secondary custom-diff" data-size="2">Intro</button>
+                    <button class="btn btn-secondary custom-diff" data-size="3">Easy</button>
+                    <button class="btn btn-secondary custom-diff" data-size="4">Difficult</button>
+                    <button class="btn btn-secondary custom-diff" data-size="5">Hard</button>
+                </div>
+
+                <button id="generateBtn" class="btn btn-primary">Generate Puzzle</button>
+
+                <p class="privacy-note">
+                    Your image stays on this device and is used only to generate a puzzle. It is not uploaded or shared.
+                </p>
+
+                <button id="backToHome2" class="btn btn-ghost">Back</button>
+            </div>
+        </section>
+
+        <section id="gameScreen" class="screen">
+            <div class="game-shell">
+                <div class="top-bar">
+                    <div class="info-pill" id="difficultyLabel">Difficulty: -</div>
+                    <div class="info-pill" id="stageLabel">Stage: -</div>
+                    <div class="info-pill" id="timer">Time: 0:00</div>
+                    <div class="info-pill" id="moves">Moves: 0</div>
+                    <div class="info-pill" id="hints">Hints: 0/0</div>
+                    <div class="info-pill" id="playerLabel">Player: -</div>
+                </div>
+
+                <div id="puzzleContainer"></div>
+
+                <div class="controls">
+                    <button id="previewBtn" class="btn btn-secondary">Preview</button>
+                    <button id="hintBtn" class="btn btn-secondary">Hint</button>
+                    <button id="resetBtn" class="btn btn-secondary">Reset</button>
+                    <button id="homeBtn" class="btn btn-ghost">Home</button>
+                </div>
+
+                <div id="messageBox"></div>
+            </div>
+        </section>
+
+        <section id="completeScreen" class="screen">
+            <div class="panel">
+                <h2>Puzzle Complete</h2>
+                <p id="finalTime"></p>
+                <p id="finalMoves"></p>
+
+                <div class="menu-actions">
+                    <button id="playAgainBtn" class="btn btn-primary">Play Again</button>
+                    <button id="homeBtnFinal" class="btn btn-ghost">Home</button>
+                </div>
+            </div>
+        </section>
+
+        <div id="previewOverlay" class="hidden">
+            <div class="preview-card">
+                <img id="previewImage" src="" alt="Puzzle Preview">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
