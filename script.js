@@ -997,6 +997,14 @@ const savedUser = localStorage.getItem("baliktahananCurrentUser");
 if (savedUser) {
     state.currentPlayer = savedUser;
 }
+
 updatePlayerLabel();
 updateResumeButton();
-goHome();
+
+const autoSave = getSavedPuzzle();
+
+if (autoSave && state.currentPlayer && autoSave.player === state.currentPlayer) {
+    restoreSavedPuzzle(autoSave);
+} else {
+    goHome();
+}
