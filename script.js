@@ -10,6 +10,7 @@ const screens = {
 
 const startBtn = document.getElementById("startBtn");
 const loginBtn = document.getElementById("loginBtn");
+const resumeBtn = document.getElementById("resumeBtn");
 const customBtn = document.getElementById("customBtn");
 const backToHome1 = document.getElementById("backToHome1");
 const backToHome2 = document.getElementById("backToHome2");
@@ -58,9 +59,9 @@ let accountMode = "register";
 const imageSets = {
     intro: ["puzzles/logo.png"],
     easy: [
-        "puzzles/easy1.png",
+        "puzzles/easy1.jpg",
         "puzzles/easy2.png",
-        "puzzles/easy3.jpg"
+        "puzzles/easy3.png"
     ],
     difficult: [
         "puzzles/diff1.jpg",
@@ -121,6 +122,146 @@ const state = {
     selectedDifficulty: null
 };
 
+function getSaveKey() {
+    return state.currentPlayer ? `baliktahananSave_${state.currentPlayer}` : null;
+}
+
+function savePuzzleProgress() {
+    if (!state.currentPlayer) return;
+    if (!state.mode) return;
+    if (state.mode === "custom") return;
+
+    const pieces = [...puzzleContainer.querySelectorAll(".puzzle-piece")].map(piece => ({
+        className: piece.classList.contains("intro-piece") ? "intro-piece" : "auto-piece",
+        width: parseFloat(piece.style.width),
+        height: parseFloat(piece.style.height),
+        left: parseFloat(piece.style.left),
+        top: parseFloat(piece.style.top),
+        bgX: parseFloat(piece.dataset.bgX),
+        bgY: parseFloat(piece.dataset.bgY),
+        correctX: parseFloat(piece.dataset.correctX),
+        correctY: parseFloat(piece.dataset.correctY),
+        locked: piece.dataset.locked === "true",
+        zIndex: piece.style.zIndex || "1"
+    }));
+
+    const saveData = {
+        player: state.currentPlayer,
+        mode: state.mode,
+        stageIndex: state.stageIndex,
+        totalStages: state.totalStages,
+        gridSize: state.gridSize,
+        currentImageSrc: state.currentImageSrc,
+        moves: state.moves,
+        solved: state.solved,
+        totalPieces: state.totalPieces,
+        hintsUsed: state.hintsUsed,
+        maxHints: state.maxHints,
+        elapsedSeconds: state.elapsedSeconds,
+        pieces
+    };
+
+    const key = getSaveKey();
+    if (key) {
+        localStorage.setItem(key, JSON.stringify(saveData));
+    }
+}
+
+function getSavedPuzzle() {
+    const currentUser = state.currentPlayer || localStorage.getItem("baliktahananCurrentUser");
+    if (!currentUser) return null;
+    const raw = localStorage.getItem(`baliktahananSave_${currentUser}`);
+    if (!raw) return null;
+
+    try {
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+function clearSavedPuzzle() {
+    const currentUser = state.currentPlayer || localStorage.getItem("baliktahananCurrentUser");
+    if (!currentUser) return;
+    localStorage.removeItem(`baliktahananSave_${currentUser}`);
+}
+
+function updateResumeButton() {
+    const save = getSavedPuzzle();
+    resumeBtn.style.display = save ? "inline-block" : "none";
+}
+
+function restoreSavedPuzzle(saveData) {
+    clearBoard({ resetHints: false });
+    showScreen("game");
+
+    state.mode = saveData.mode;
+    state.stageIndex = saveData.stageIndex;
+    state.totalStages = saveData.totalStages;
+    state.gridSize = saveData.gridSize;
+    state.currentImageSrc = saveData.currentImageSrc;
+    state.moves = saveData.moves;
+    state.solved = saveData.solved;
+    state.totalPieces = saveData.totalPieces;
+    state.hintsUsed = saveData.hintsUsed;
+    state.maxHints = saveData.maxHints;
+    state.elapsedSeconds = saveData.elapsedSeconds;
+    state.playAgainMode = saveData.mode;
+
+    updateHeader();
+    updateMoves();
+    updateHints();
+
+    previewImage.src = saveData.currentImageSrc;
+
+    const boardSize = getBoardSize();
+    const pieceSize = boardSize / saveData.gridSize;
+
+    for (let row = 0; row < saveData.gridSize; row++) {
+        for (let col = 0; col < saveData.gridSize; col++) {
+            createSlot(col * pieceSize, row * pieceSize, pieceSize, pieceSize);
+        }
+    }
+
+    saveData.pieces.forEach(data => {
+        const piece = document.createElement("div");
+        piece.className = `puzzle-piece ${data.className}`;
+        piece.style.width = `${data.width}px`;
+        piece.style.height = `${data.height}px`;
+        piece.style.left = `${data.left}px`;
+        piece.style.top = `${data.top}px`;
+        piece.style.backgroundImage = `url("${saveData.currentImageSrc}")`;
+        piece.style.backgroundSize = `${boardSize}px ${boardSize}px`;
+        piece.style.backgroundPosition = `-${data.bgX}px -${data.bgY}px`;
+        piece.style.backgroundRepeat = "no-repeat";
+        piece.style.zIndex = data.locked ? "1" : data.zIndex;
+
+        piece.dataset.correctX = String(data.correctX);
+        piece.dataset.correctY = String(data.correctY);
+        piece.dataset.locked = data.locked ? "true" : "false";
+        piece.dataset.bgX = String(data.bgX);
+        piece.dataset.bgY = String(data.bgY);
+
+        if (data.locked) {
+            piece.classList.add("locked");
+        } else {
+            addDragHandlers(piece);
+        }
+
+        puzzleContainer.appendChild(piece);
+    });
+
+    setMessage("Progress restored.");
+
+    resetTimer();
+    state.startTime = Date.now() - (state.elapsedSeconds * 1000);
+    state.timerInterval = setInterval(() => {
+        state.elapsedSeconds = Math.floor((Date.now() - state.startTime) / 1000);
+        timerLabel.textContent = `Time: ${formatTime(state.elapsedSeconds)}`;
+        savePuzzleProgress();
+    }, 250);
+}
+
 function showScreen(name) {
     Object.values(screens).forEach(screen => screen.classList.remove("active"));
     screens[name].classList.add("active");
@@ -174,6 +315,7 @@ function startTimer() {
     state.timerInterval = setInterval(() => {
         state.elapsedSeconds = Math.floor((Date.now() - state.startTime) / 1000);
         timerLabel.textContent = `Time: ${formatTime(state.elapsedSeconds)}`;
+        savePuzzleProgress();
     }, 250);
 }
 
@@ -198,19 +340,17 @@ function clearBoard({ resetHints = true } = {}) {
 
 function goHome() {
     clearBoard();
-
     state.mode = null;
     state.stageIndex = 0;
     state.totalStages = 1;
     state.gridSize = 0;
     state.currentImageSrc = "";
     state.selectedDifficulty = null;
-
     difficultyLabel.textContent = "Difficulty: -";
     stageLabel.textContent = "Stage: -";
-
     previewOverlay.classList.add("hidden");
     updatePlayerLabel();
+    updateResumeButton();
 
     if (state.currentPlayer) {
         showScreen("difficulty");
@@ -303,6 +443,8 @@ function createPieceBase(className, width, height, imageSrc, boardSize, bgX, bgY
     piece.dataset.correctX = String(correctX);
     piece.dataset.correctY = String(correctY);
     piece.dataset.locked = "false";
+    piece.dataset.bgX = String(bgX);
+    piece.dataset.bgY = String(bgY);
     piece.style.zIndex = String(++topZIndex);
 
     addDragHandlers(piece);
@@ -363,6 +505,7 @@ function onPointerUp(event) {
     updateMoves();
 
     trySnap(piece);
+    savePuzzleProgress();
 
     state.draggingPiece = null;
 }
@@ -394,6 +537,7 @@ function lockPiece(piece) {
 
     state.solved += 1;
     setMessage(`Nice! ${state.solved}/${state.totalPieces} placed.`);
+    savePuzzleProgress();
 
     if (state.solved === state.totalPieces) {
         onPuzzleComplete();
@@ -406,6 +550,8 @@ function onPuzzleComplete() {
     setMessage("Puzzle complete!");
 
     savePlayerData();
+    clearSavedPuzzle();
+    updateResumeButton();
 
     setTimeout(() => {
         finalTime.textContent = `Final Time: ${formatTime(state.elapsedSeconds)}`;
@@ -466,6 +612,7 @@ async function startIntroPuzzle(imageSrc) {
 
         setMessage("Arrange the pieces to complete the logo.");
         startTimer();
+        savePuzzleProgress();
     } catch (error) {
         console.error(error);
         alert(error.message);
@@ -517,6 +664,7 @@ async function startAutoPuzzle(imageSrc, gridSize) {
 
         setMessage("Move the pieces into the correct places.");
         startTimer();
+        savePuzzleProgress();
     } catch (error) {
         console.error(error);
         alert(error.message);
@@ -602,6 +750,7 @@ function giveHint() {
     updateMoves();
 
     lockPiece(randomPiece);
+    savePuzzleProgress();
 }
 
 function handleCustomImage(file) {
@@ -686,6 +835,7 @@ function handleAccountConfirm() {
     state.currentPlayer = username;
     localStorage.setItem("baliktahananCurrentUser", username);
     updatePlayerLabel();
+    updateResumeButton();
     showScreen("difficulty");
 }
 
@@ -695,6 +845,23 @@ startBtn.addEventListener("click", () => {
 
 loginBtn.addEventListener("click", () => {
     openAccountScreen("login");
+});
+
+resumeBtn.addEventListener("click", () => {
+    const savedUser = localStorage.getItem("baliktahananCurrentUser");
+    if (savedUser) {
+        state.currentPlayer = savedUser;
+        updatePlayerLabel();
+    }
+
+    const save = getSavedPuzzle();
+    if (!save) {
+        alert("No saved puzzle found.");
+        updateResumeButton();
+        return;
+    }
+
+    restoreSavedPuzzle(save);
 });
 
 accountConfirmBtn.addEventListener("click", handleAccountConfirm);
@@ -725,6 +892,8 @@ backToDifficultyBtn.addEventListener("click", () => {
 });
 
 resetBtn.addEventListener("click", () => {
+    clearSavedPuzzle();
+    updateResumeButton();
     if (!state.mode) return;
     loadCurrentStage();
 });
@@ -807,13 +976,21 @@ generateBtn.addEventListener("click", () => {
 
     state.mode = "custom";
     state.playAgainMode = "custom";
+    clearSavedPuzzle();
+    updateResumeButton();
     loadCurrentStage();
 });
 
 window.addEventListener("resize", () => {
     if (!screens.game.classList.contains("active")) return;
     if (!state.mode) return;
-    loadCurrentStage();
+
+    const save = getSavedPuzzle();
+    if (save && save.mode === state.mode && state.mode !== "custom") {
+        restoreSavedPuzzle(save);
+    } else {
+        loadCurrentStage();
+    }
 });
 
 const savedUser = localStorage.getItem("baliktahananCurrentUser");
@@ -821,4 +998,5 @@ if (savedUser) {
     state.currentPlayer = savedUser;
 }
 updatePlayerLabel();
+updateResumeButton();
 goHome();
