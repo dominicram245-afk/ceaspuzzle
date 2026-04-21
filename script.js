@@ -59,9 +59,9 @@ let accountMode = "register";
 const imageSets = {
     intro: ["puzzles/logo.png"],
     easy: [
-        "puzzles/easy1.jpg",
+        "puzzles/easy1.png",
         "puzzles/easy2.png",
-        "puzzles/easy3.png"
+        "puzzles/easy3.jpg"
     ],
     difficult: [
         "puzzles/diff1.jpg",
