@@ -1008,3 +1008,12 @@ if (autoSave && state.currentPlayer && autoSave.player === state.currentPlayer) 
 } else {
     goHome();
 }
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        savePuzzleProgress();
+    }
+});
+
+window.addEventListener("beforeunload", () => {
+    savePuzzleProgress();
+});
