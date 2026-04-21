@@ -33,6 +33,13 @@ body {
     align-items: center;
 }
 
+#homeLogo {
+    width: min(48vw, 220px);
+    height: auto;
+    display: block;
+    margin: 0 auto 16px;
+}
+
 .screen.active {
     display: flex;
 }
