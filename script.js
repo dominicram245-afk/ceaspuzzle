@@ -198,17 +198,25 @@ function clearBoard({ resetHints = true } = {}) {
 
 function goHome() {
     clearBoard();
+
     state.mode = null;
     state.stageIndex = 0;
     state.totalStages = 1;
     state.gridSize = 0;
     state.currentImageSrc = "";
     state.selectedDifficulty = null;
+
     difficultyLabel.textContent = "Difficulty: -";
     stageLabel.textContent = "Stage: -";
+
     previewOverlay.classList.add("hidden");
     updatePlayerLabel();
-    showScreen("home");
+
+    if (state.currentPlayer) {
+        showScreen("difficulty");
+    } else {
+        showScreen("home");
+    }
 }
 
 function preloadImage(src) {
