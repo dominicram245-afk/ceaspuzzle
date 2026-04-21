@@ -170,6 +170,7 @@ function savePuzzleProgress() {
 function getSavedPuzzle() {
     const currentUser = state.currentPlayer || localStorage.getItem("baliktahananCurrentUser");
     if (!currentUser) return null;
+
     const raw = localStorage.getItem(`baliktahananSave_${currentUser}`);
     if (!raw) return null;
 
@@ -188,7 +189,9 @@ function clearSavedPuzzle() {
 
 function updateResumeButton() {
     const save = getSavedPuzzle();
-    resumeBtn.style.display = save ? "inline-block" : "none";
+    if (resumeBtn) {
+        resumeBtn.style.display = save ? "inline-block" : "none";
+    }
 }
 
 function restoreSavedPuzzle(saveData) {
@@ -253,8 +256,10 @@ function restoreSavedPuzzle(saveData) {
 
     setMessage("Progress restored.");
 
-    resetTimer();
+    clearInterval(state.timerInterval);
     state.startTime = Date.now() - (state.elapsedSeconds * 1000);
+    timerLabel.textContent = `Time: ${formatTime(state.elapsedSeconds)}`;
+
     state.timerInterval = setInterval(() => {
         state.elapsedSeconds = Math.floor((Date.now() - state.startTime) / 1000);
         timerLabel.textContent = `Time: ${formatTime(state.elapsedSeconds)}`;
@@ -839,100 +844,127 @@ function handleAccountConfirm() {
     showScreen("difficulty");
 }
 
-startBtn.addEventListener("click", () => {
-    openAccountScreen("register");
-});
+if (startBtn) {
+    startBtn.addEventListener("click", () => {
+        openAccountScreen("register");
+    });
+}
 
-loginBtn.addEventListener("click", () => {
-    openAccountScreen("login");
-});
+if (loginBtn) {
+    loginBtn.addEventListener("click", () => {
+        openAccountScreen("login");
+    });
+}
 
-resumeBtn.addEventListener("click", () => {
-    const savedUser = localStorage.getItem("baliktahananCurrentUser");
-    if (savedUser) {
-        state.currentPlayer = savedUser;
-        updatePlayerLabel();
-    }
+if (resumeBtn) {
+    resumeBtn.addEventListener("click", () => {
+        const savedUser = localStorage.getItem("baliktahananCurrentUser");
+        if (savedUser) {
+            state.currentPlayer = savedUser;
+            updatePlayerLabel();
+        }
 
-    const save = getSavedPuzzle();
-    if (!save) {
-        alert("No saved puzzle found.");
-        updateResumeButton();
-        return;
-    }
-
-    restoreSavedPuzzle(save);
-});
-
-accountConfirmBtn.addEventListener("click", handleAccountConfirm);
-accountBackBtn.addEventListener("click", goHome);
-
-usernameInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") {
-        handleAccountConfirm();
-    }
-});
-
-customBtn.addEventListener("click", () => {
-    const savedUser = localStorage.getItem("baliktahananCurrentUser");
-    if (savedUser) {
-        state.currentPlayer = savedUser;
-        updatePlayerLabel();
-    }
-    showScreen("custom");
-});
-
-backToHome1.addEventListener("click", goHome);
-backToHome2.addEventListener("click", goHome);
-homeBtn.addEventListener("click", goHome);
-homeBtnFinal.addEventListener("click", goHome);
-
-backToDifficultyBtn.addEventListener("click", () => {
-    showScreen("difficulty");
-});
-
-resetBtn.addEventListener("click", () => {
-    clearSavedPuzzle();
-    updateResumeButton();
-    if (!state.mode) return;
-    loadCurrentStage();
-});
-
-previewBtn.addEventListener("click", togglePreview);
-
-previewOverlay.addEventListener("click", () => {
-    previewOverlay.classList.add("hidden");
-});
-
-hintBtn.addEventListener("click", giveHint);
-
-playAgainBtn.addEventListener("click", () => {
-    if (state.playAgainMode === "custom") {
-        if (!state.customImageSrc || !state.customGridSize) {
-            showScreen("custom");
+        const save = getSavedPuzzle();
+        if (!save) {
+            alert("No saved puzzle found.");
+            updateResumeButton();
             return;
         }
-        state.mode = "custom";
+
+        restoreSavedPuzzle(save);
+    });
+}
+
+if (accountConfirmBtn) {
+    accountConfirmBtn.addEventListener("click", handleAccountConfirm);
+}
+
+if (accountBackBtn) {
+    accountBackBtn.addEventListener("click", goHome);
+}
+
+if (usernameInput) {
+    usernameInput.addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            handleAccountConfirm();
+        }
+    });
+}
+
+if (customBtn) {
+    customBtn.addEventListener("click", () => {
+        const savedUser = localStorage.getItem("baliktahananCurrentUser");
+        if (savedUser) {
+            state.currentPlayer = savedUser;
+            updatePlayerLabel();
+        }
+        showScreen("custom");
+    });
+}
+
+if (backToHome1) backToHome1.addEventListener("click", goHome);
+if (backToHome2) backToHome2.addEventListener("click", goHome);
+if (homeBtn) homeBtn.addEventListener("click", goHome);
+if (homeBtnFinal) homeBtnFinal.addEventListener("click", goHome);
+
+if (backToDifficultyBtn) {
+    backToDifficultyBtn.addEventListener("click", () => {
+        showScreen("difficulty");
+    });
+}
+
+if (resetBtn) {
+    resetBtn.addEventListener("click", () => {
+        clearSavedPuzzle();
+        updateResumeButton();
+        if (!state.mode) return;
         loadCurrentStage();
-        return;
-    }
+    });
+}
 
-    if (state.playAgainMode === "intro") {
-        state.mode = "intro";
-        state.stageIndex = 0;
-        loadCurrentStage();
-        return;
-    }
+if (previewBtn) {
+    previewBtn.addEventListener("click", togglePreview);
+}
 
-    if (state.playAgainMode === "easy" || state.playAgainMode === "difficult" || state.playAgainMode === "hard") {
-        state.selectedDifficulty = state.playAgainMode;
-        stageModeLabel.textContent = `Difficulty: ${difficultyNames[state.playAgainMode]}`;
-        showScreen("stage");
-        return;
-    }
+if (previewOverlay) {
+    previewOverlay.addEventListener("click", () => {
+        previewOverlay.classList.add("hidden");
+    });
+}
 
-    goHome();
-});
+if (hintBtn) {
+    hintBtn.addEventListener("click", giveHint);
+}
+
+if (playAgainBtn) {
+    playAgainBtn.addEventListener("click", () => {
+        if (state.playAgainMode === "custom") {
+            if (!state.customImageSrc || !state.customGridSize) {
+                showScreen("custom");
+                return;
+            }
+            state.mode = "custom";
+            loadCurrentStage();
+            return;
+        }
+
+        if (state.playAgainMode === "intro") {
+            state.mode = "intro";
+            state.stageIndex = 0;
+            loadCurrentStage();
+            return;
+        }
+
+        if (state.playAgainMode === "easy" || state.playAgainMode === "difficult" || state.playAgainMode === "hard") {
+            state.selectedDifficulty = state.playAgainMode;
+            stageModeLabel.textContent = `Difficulty: ${difficultyNames[state.playAgainMode]}`;
+            showScreen("stage");
+            return;
+        }
+
+        goHome();
+    });
+}
 
 diffButtons.forEach(button => {
     button.addEventListener("click", () => {
@@ -958,28 +990,32 @@ customDiffButtons.forEach(button => {
     });
 });
 
-imageUpload.addEventListener("change", event => {
-    const file = event.target.files[0];
-    handleCustomImage(file);
-});
+if (imageUpload) {
+    imageUpload.addEventListener("change", event => {
+        const file = event.target.files[0];
+        handleCustomImage(file);
+    });
+}
 
-generateBtn.addEventListener("click", () => {
-    if (!state.customImageSrc) {
-        alert("Please upload an image first.");
-        return;
-    }
+if (generateBtn) {
+    generateBtn.addEventListener("click", () => {
+        if (!state.customImageSrc) {
+            alert("Please upload an image first.");
+            return;
+        }
 
-    if (!state.customGridSize) {
-        alert("Please select a difficulty first.");
-        return;
-    }
+        if (!state.customGridSize) {
+            alert("Please select a difficulty first.");
+            return;
+        }
 
-    state.mode = "custom";
-    state.playAgainMode = "custom";
-    clearSavedPuzzle();
-    updateResumeButton();
-    loadCurrentStage();
-});
+        state.mode = "custom";
+        state.playAgainMode = "custom";
+        clearSavedPuzzle();
+        updateResumeButton();
+        loadCurrentStage();
+    });
+}
 
 window.addEventListener("resize", () => {
     if (!screens.game.classList.contains("active")) return;
@@ -991,6 +1027,16 @@ window.addEventListener("resize", () => {
     } else {
         loadCurrentStage();
     }
+});
+
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        savePuzzleProgress();
+    }
+});
+
+window.addEventListener("beforeunload", () => {
+    savePuzzleProgress();
 });
 
 const savedUser = localStorage.getItem("baliktahananCurrentUser");
@@ -1008,12 +1054,3 @@ if (autoSave && state.currentPlayer && autoSave.player === state.currentPlayer) 
 } else {
     goHome();
 }
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-        savePuzzleProgress();
-    }
-});
-
-window.addEventListener("beforeunload", () => {
-    savePuzzleProgress();
-});
