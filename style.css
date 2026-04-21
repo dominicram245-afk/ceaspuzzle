@@ -33,13 +33,6 @@ body {
     align-items: center;
 }
 
-#homeLogo {
-    width: min(48vw, 220px);
-    height: auto;
-    display: block;
-    margin: 0 auto 16px;
-}
-
 .screen.active {
     display: flex;
 }
@@ -56,6 +49,13 @@ body {
 
 .home-panel {
     max-width: 640px;
+}
+
+#homeLogo {
+    width: min(42vw, 180px);
+    height: auto;
+    display: block;
+    margin: 0 auto 16px;
 }
 
 h1 {
